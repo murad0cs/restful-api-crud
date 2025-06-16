@@ -2,13 +2,13 @@
 
 A simple, scalable REST API built with Node.js and Express using ES Modules and async/await.
 
-## 🚀 Features
+## Features
 - RESTful endpoints for item management (Create, Read, Update, Delete)
 - Modern ES6+ syntax with `import/export`
 - Async/await for future database integration
 - Centralized error handling and input validation
 
-## 🧱 Folder Structure
+## Folder Structure
 
 ```
 .
@@ -29,7 +29,7 @@ A simple, scalable REST API built with Node.js and Express using ES Modules and 
 └── README.md
 ```
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install
@@ -51,11 +51,11 @@ npm start
 | PUT    | /items/:id    | Update an existing item |
 | DELETE | /items/:id    | Delete an item          |
 
-## 🧪 Testing
+##  Testing
 
 Use Postman or import the included collection file `postman_collection.json` for testing all endpoints.
 
-## 🔐 Notes
+## Additional Notes
 
 - In-memory storage only; no database required.
 - Easily extendable to support persistent DBs like MongoDB or PostgreSQL.
