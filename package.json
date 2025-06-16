@@ -1,0 +1,13 @@
+{
+  "name": "restful-api-crud-esm",
+  "version": "1.0.0",
+  "description": "A simple RESTful API using Node.js with ES Modules and async/await.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
