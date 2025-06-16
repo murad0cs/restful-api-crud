@@ -35,7 +35,7 @@ A simple, scalable REST API built with Node.js and Express using ES Modules and 
 npm install
 ```
 
-## ▶️ Run the API
+## Run the API
 
 ```bash
 npm start
