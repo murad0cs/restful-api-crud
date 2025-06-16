@@ -41,7 +41,7 @@ npm install
 npm start
 ```
 
-## 📬 Endpoints
+## Endpoints
 
 | Method | Endpoint      | Description             |
 |--------|---------------|-------------------------|
