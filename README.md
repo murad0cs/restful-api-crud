@@ -137,11 +137,11 @@ npm start
 
 ## Future Integration Ideas
 
-- 🔌 MongoDB or PostgreSQL via Mongoose/Sequelize
-- 🛡 Authentication with JWT
-- 📈 Swagger (OpenAPI) docs
-- ⚡ Redis caching
-- 📦 Docker support
+- MongoDB or PostgreSQL via Mongoose/Sequelize
+- Authentication with JWT
+- Swagger (OpenAPI) docs
+- Redis caching
+- Docker support
 
 ---
 
