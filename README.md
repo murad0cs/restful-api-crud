@@ -58,7 +58,7 @@ restful-api-crud/
 1. **Clone the repo**
 
 ```bash
-git clone https://github.com/your-username/restful-api-crud.git
+git clone https://github.com/murad0cs/restful-api-crud.git
 cd restful-api-crud
 ```
 
