@@ -1,144 +1,116 @@
-const itemService = require('../services/itemService');
-const { Item } = require('../models/Item');
-const logger = require('../utils/logger');
-const { AppError } = require('../utils/AppError');
+import { AppError } from '../utils/AppError.js';
+import { itemSchema } from '../validators/itemValidator.js';
+import itemService from '../services/itemService.js';
+import { querySchema } from '../models/Item.js';
 
-class ItemController {
-  async createItem(req, res, next) {
-    try {
-      const { error, value } = Item.validate(req.body);
-      
-      if (error) {
-        const errorMessage = error.details.map(detail => detail.message).join(', ');
-        return next(new AppError(errorMessage, 400));
-      }
+let items = []; // In-memory store
 
-      const item = await itemService.createItem(value);
-      
-      res.status(201).json({
-        success: true,
-        data: item.toJSON(),
-        message: 'Item created successfully'
-      });
-    } catch (error) {
-      next(error);
-    }
+export const getItemById = async (req, res, next) => {
+  try {
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) throw new AppError('Item not found', 404);
+    res.status(200).json({ success: true, data: item });
+  } catch (err) {
+    next(err);
   }
+};
 
-  async getAllItems(req, res, next) {
-    try {
-      const { error, value } = Item.validateQuery(req.query);
-      
-      if (error) {
-        const errorMessage = error.details.map(detail => detail.message).join(', ');
-        return next(new AppError(errorMessage, 400));
-      }
+export const createItem = async (req, res, next) => {
+  try {
+    const { error, value } = itemSchema.validate(req.body, { abortEarly: false });
 
-      const result = await itemService.getAllItems(value);
-      
-      res.status(200).json({
-        success: true,
-        data: result.items.map(item => item.toJSON()),
-        pagination: result.pagination,
-        message: `Retrieved ${result.items.length} items successfully`
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.details.map(d => d.message)
       });
-    } catch (error) {
-      next(error);
     }
+
+    const timestamp = new Date().toISOString();
+    const newItem = {
+      id: Date.now().toString(),
+      ...value,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    items.push(newItem);
+
+    res.status(201).json({
+      success: true,
+      data: newItem,
+    });
+  } catch (err) {
+    next(err);
   }
+};
 
-  async getItemById(req, res, next) {
-    try {
-      const { id } = req.params;
-      
-      if (!id || id.trim() === '') {
-        return next(new AppError('Item ID is required', 400));
-      }
+export const updateItem = async (req, res, next) => {
+  try {
+    const index = items.findIndex(i => i.id === req.params.id);
+    if (index === -1) throw new AppError('Item not found', 404);
 
-      const item = await itemService.getItemById(id);
-      
-      if (!item) {
-        return next(new AppError('Item not found', 404));
-      }
+    const { error, value } = itemSchema.validate(req.body, { abortEarly: false });
 
-      res.status(200).json({
-        success: true,
-        data: item.toJSON(),
-        message: 'Item retrieved successfully'
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.details.map(d => d.message)
       });
-    } catch (error) {
-      next(error);
     }
+
+    const updatedItem = {
+      ...items[index],
+      ...value,
+      updatedAt: new Date().toISOString()
+    };
+
+    items[index] = updatedItem;
+
+    res.status(200).json({
+      success: true,
+      data: updatedItem,
+    });
+  } catch (err) {
+    next(err);
   }
+};
 
-  async updateItem(req, res, next) {
-    try {
-      const { id } = req.params;
-      
-      if (!id || id.trim() === '') {
-        return next(new AppError('Item ID is required', 400));
-      }
+export const deleteItem = async (req, res, next) => {
+  try {
+    const index = items.findIndex(i => i.id === req.params.id);
+    if (index === -1) throw new AppError('Item not found', 404);
 
-      const { error, value } = Item.validateUpdate(req.body);
-      
-      if (error) {
-        const errorMessage = error.details.map(detail => detail.message).join(', ');
-        return next(new AppError(errorMessage, 400));
-      }
+    items.splice(index, 1);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
 
-      const item = await itemService.updateItem(id, value);
-      
-      if (!item) {
-        return next(new AppError('Item not found', 404));
-      }
-
-      res.status(200).json({
-        success: true,
-        data: item.toJSON(),
-        message: 'Item updated successfully'
+export const getAllItems = async (req, res, next) => {
+  try {
+    // Validate query params
+    const { value: validatedQuery, error } = querySchema.validate(req.query, { abortEarly: false });
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid query parameters',
+        details: error.details.map(d => d.message),
       });
-    } catch (error) {
-      next(error);
     }
+
+    // Call service with validated query
+    const result = await itemService.getAllItems(validatedQuery);
+
+    res.status(200).json({
+      success: true,
+      data: result.items,
+      pagination: result.pagination,
+    });
+  } catch (err) {
+    next(err);
   }
-
-  async deleteItem(req, res, next) {
-    try {
-      const { id } = req.params;
-      
-      if (!id || id.trim() === '') {
-        return next(new AppError('Item ID is required', 400));
-      }
-
-      const item = await itemService.deleteItem(id);
-      
-      if (!item) {
-        return next(new AppError('Item not found', 404));
-      }
-
-      res.status(200).json({
-        success: true,
-        data: null,
-        message: 'Item deleted successfully'
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getStats(req, res, next) {
-    try {
-      const stats = await itemService.getStats();
-      
-      res.status(200).json({
-        success: true,
-        data: stats,
-        message: 'Statistics retrieved successfully'
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-}
-
-module.exports = new ItemController();
+};

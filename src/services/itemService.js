@@ -1,6 +1,6 @@
-const { Item } = require('../models/Item');
-const logger = require('../utils/logger');
-const { AppError } = require('../utils/AppError');
+import { Item } from '../models/Item.js';
+import logger from '../utils/logger.js';
+import { AppError } from '../utils/AppError.js';
 
 class ItemService {
   constructor() {
@@ -261,4 +261,4 @@ class ItemService {
 // Singleton instance
 const itemService = new ItemService();
 
-module.exports = itemService;
+export default itemService;

@@ -1,16 +1,18 @@
-const express = require('express');
-const itemController = require('../controllers/itemController');
+import express from 'express';
+import {
+  getAllItems,
+  getItemById,
+  createItem,
+  updateItem,
+  deleteItem
+} from '../controllers/itemController.js';
 
 const router = express.Router();
 
-// Statistics endpoint (should be before /:id route)
-router.get('/stats', itemController.getStats);
+router.get('/', getAllItems);
+router.get('/:id', getItemById);
+router.post('/', createItem);
+router.put('/:id', updateItem);
+router.delete('/:id', deleteItem);
 
-// CRUD routes
-router.post('/', itemController.createItem);
-router.get('/', itemController.getAllItems);
-router.get('/:id', itemController.getItemById);
-router.put('/:id', itemController.updateItem);
-router.delete('/:id', itemController.deleteItem);
-
-module.exports = router;
+export default router;

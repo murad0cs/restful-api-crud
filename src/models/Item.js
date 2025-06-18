@@ -1,8 +1,10 @@
-const Joi = require('joi');
-const { v4: uuidv4 } = require('uuid');
+import Joi from 'joi';
+import { v4 as uuidv4 } from 'uuid';
+import { AppError } from '../utils/AppError.js';
 
 // Validation schemas
-const itemSchema = Joi.object({
+
+export const itemSchema = Joi.object({
   name: Joi.string()
     .min(1)
     .max(100)
@@ -13,7 +15,7 @@ const itemSchema = Joi.object({
       'string.min': 'Name must be at least 1 character long',
       'string.max': 'Name cannot exceed 100 characters'
     }),
-  
+
   description: Joi.string()
     .max(500)
     .trim()
@@ -22,7 +24,7 @@ const itemSchema = Joi.object({
     .messages({
       'string.max': 'Description cannot exceed 500 characters'
     }),
-  
+
   price: Joi.number()
     .positive()
     .precision(2)
@@ -30,7 +32,7 @@ const itemSchema = Joi.object({
     .messages({
       'number.positive': 'Price must be a positive number'
     }),
-  
+
   category: Joi.string()
     .max(50)
     .trim()
@@ -39,7 +41,7 @@ const itemSchema = Joi.object({
     .messages({
       'string.max': 'Category cannot exceed 50 characters'
     }),
-  
+
   tags: Joi.array()
     .items(Joi.string().max(30).trim())
     .max(10)
@@ -48,45 +50,22 @@ const itemSchema = Joi.object({
       'array.max': 'Cannot have more than 10 tags',
       'string.max': 'Each tag cannot exceed 30 characters'
     }),
-  
+
   isActive: Joi.boolean().optional()
 });
 
-const updateItemSchema = Joi.object({
-  name: Joi.string()
-    .min(1)
-    .max(100)
-    .trim()
-    .optional(),
-  
-  description: Joi.string()
-    .max(500)
-    .trim()
-    .optional()
-    .allow(''),
-  
-  price: Joi.number()
-    .positive()
-    .precision(2)
-    .optional(),
-  
-  category: Joi.string()
-    .max(50)
-    .trim()
-    .lowercase()
-    .optional(),
-  
-  tags: Joi.array()
-    .items(Joi.string().max(30).trim())
-    .max(10)
-    .optional(),
-  
+export const updateItemSchema = Joi.object({
+  name: Joi.string().min(1).max(100).trim().optional(),
+  description: Joi.string().max(500).trim().optional().allow(''),
+  price: Joi.number().positive().precision(2).optional(),
+  category: Joi.string().max(50).trim().lowercase().optional(),
+  tags: Joi.array().items(Joi.string().max(30).trim()).max(10).optional(),
   isActive: Joi.boolean().optional()
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update'
 });
 
-const querySchema = Joi.object({
+export const querySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
   category: Joi.string().trim().optional(),
@@ -96,40 +75,35 @@ const querySchema = Joi.object({
   sortOrder: Joi.string().valid('asc', 'desc').default('desc')
 });
 
-class Item {
+export class Item {
   constructor(data) {
+    // Validate on creation
+    const { error, value } = itemSchema.validate(data, { abortEarly: false });
+    if (error) throw new AppError('Validation failed', 400, error.details);
+
     this.id = data.id || uuidv4();
-    this.name = data.name;
-    this.description = data.description || '';
-    this.price = data.price || 0;
-    this.category = data.category || 'general';
-    this.tags = data.tags || [];
-    this.isActive = data.isActive !== undefined ? data.isActive : true;
+    this.name = value.name;
+    this.description = value.description || '';
+    this.price = value.price || 0;
+    this.category = value.category || 'general';
+    this.tags = value.tags || [];
+    this.isActive = value.isActive !== undefined ? value.isActive : true;
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = data.updatedAt || new Date().toISOString();
   }
 
-  static validate(data) {
-    return itemSchema.validate(data, { abortEarly: false });
-  }
-
-  static validateUpdate(data) {
-    return updateItemSchema.validate(data, { abortEarly: false });
-  }
-
-  static validateQuery(query) {
-    return querySchema.validate(query);
-  }
-
   update(data) {
+    // Validate update payload
+    const { error, value } = updateItemSchema.validate(data, { abortEarly: false });
+    if (error) throw new AppError('Validation failed', 400, error.details);
+
     const allowedFields = ['name', 'description', 'price', 'category', 'tags', 'isActive'];
-    
     allowedFields.forEach(field => {
-      if (data[field] !== undefined) {
-        this[field] = data[field];
+      if (value[field] !== undefined) {
+        this[field] = value[field];
       }
     });
-    
+
     this.updatedAt = new Date().toISOString();
   }
 
@@ -146,6 +120,16 @@ class Item {
       updatedAt: this.updatedAt
     };
   }
-}
 
-module.exports = { Item, itemSchema, updateItemSchema, querySchema };
+  static validate(data) {
+    return itemSchema.validate(data, { abortEarly: false });
+  }
+
+  static validateUpdate(data) {
+    return updateItemSchema.validate(data, { abortEarly: false });
+  }
+
+  static validateQuery(query) {
+    return querySchema.validate(query);
+  }
+}

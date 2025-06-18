@@ -1,41 +1,29 @@
-const logger = require('../utils/logger');
-const { AppError } = require('../utils/AppError');
-const config = require('../config/config');
+import logger from '../utils/logger.js';
+import config from '../config/config.js';
+import { AppError } from '../utils/AppError.js';
 
-const notFound = (req, res, next) => {
-  const error = new AppError(`Route not found - ${req.originalUrl}`, 404);
-  next(error);
+export const notFound = (req, res, next) => {
+  next(new AppError(`Route ${req.originalUrl} not found`, 404));
 };
 
-const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
-  error.message = err.message;
+export const errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
 
-  // Log error with context
-  logger.error('Error occurred', {
-    message: err.message,
-    stack: err.stack,
-    url: req.originalUrl,
+  logger[statusCode >= 500 ? 'error' : 'warn']('Handled Error', {
+    message,
     method: req.method,
+    url: req.originalUrl,
+    statusCode,
+    stack: err.stack,
     ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    body: req.body,
-    params: req.params,
-    query: req.query
   });
 
-  // Mongoose bad ObjectId (for future database integration)
-  if (err.name === 'CastError') {
-    const message = 'Invalid resource ID format';
-    error = new AppError(message, 400);
-  }
-
-  // Mongoose duplicate key (for future database integration)
-  if (err.code === 11000)
-  {}
-}
-
-module.exports = {
-  notFound,
-  errorHandler
+  res.status(statusCode).json({
+    success: false,
+    error: {
+      message,
+      ...(config.NODE_ENV === 'development' && { stack: err.stack }),
+    },
+  });
 };
