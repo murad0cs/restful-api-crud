@@ -40,16 +40,16 @@ restful-api-crud/
 
 ---
 
-## ✅ Features
+## Features
 
-- ✅ ES Module support (`import`/`export`)
-- ✅ Centralized `Joi` validation for input and queries
-- ✅ Clean controller-service separation
-- ✅ Pagination, sorting, search, filtering
-- ✅ Centralized error handling with custom `AppError`
-- ✅ In-memory store (easily swappable with a real DB)
-- ✅ ESM-ready with `"type": "module"`
-- ✅ Request logging and health check route
+- ES Module support (`import`/`export`)
+- Centralized `Joi` validation for input and queries
+- Clean controller-service separation
+- Pagination, sorting, search, filtering
+- Centralized error handling with custom `AppError`
+- In-memory store (easily swappable with a real DB)
+- ESM-ready with `"type": "module"`
+- Request logging and health check route
 
 ---
 
