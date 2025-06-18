@@ -1,5 +1,5 @@
 
-# 🚀 Scalable REST API
+# Scalable REST API
 
 A production-ready, scalable, and extensible REST API built with **Node.js**, **Express**, **ES Modules**, **Joi** validation, and an in-memory datastore — future-proofed for DB integration.
 
